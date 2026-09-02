@@ -2,12 +2,12 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: calendar-backend
+      dockerfile: backend/Dockerfile
+    image: sloiki-backend
     pull_policy: build
     container_name: backend-app
     env_file:
-      - .env
+      - backend/.env
     ports:
       - "8002:8002"
     networks:
