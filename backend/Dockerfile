@@ -5,21 +5,13 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 # Use the system Python across both stages
 ENV UV_PYTHON_DOWNLOADS=0
 
-# Change the working directory to the `app` directory
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (cached layer — invalidated only by lockfile changes)
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project --no-editable
-
-# Copy the project into the intermediate image
-COPY . /app
-
-# Sync the project
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-editable
+    uv sync --locked --no-install-project --no-editable --no-dev
 
 FROM python:3.11-slim
 
@@ -27,7 +19,11 @@ WORKDIR /app
 
 # Copy the environment and source code
 COPY --from=builder /app/.venv /app/.venv
-COPY backend /app/backend
+COPY app /app/app
+COPY migrations /app/migrations
+COPY alembic.ini /app/alembic.ini
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Run the application
-CMD ["/app/.venv/bin/uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
