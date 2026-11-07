@@ -1,8 +1,8 @@
 services:
   app:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     image: sloiki-backend
     pull_policy: build
     container_name: backend-app
@@ -26,7 +26,6 @@ services:
       - '5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
     networks:
       - backend
 
